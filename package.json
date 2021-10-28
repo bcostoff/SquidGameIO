@@ -2,9 +2,9 @@
   "name": "project",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "public/index.html",
   "scripts": {
-    "start": "node server",
+    "start": "node .",
     "dev": "nodemon server"
   },
   "author": "Beau Costoff",
