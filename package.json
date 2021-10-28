@@ -4,7 +4,7 @@
   "description": "",
   "main": "public/index.html",
   "scripts": {
-    "start": "node .",
+    "start": "node server",
     "dev": "nodemon server"
   },
   "author": "Beau Costoff",
