@@ -8,7 +8,7 @@
     "dev": "nodemon server"
   },
   "author": "Beau Costoff",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "nodemon": "2.0.14"
   },
