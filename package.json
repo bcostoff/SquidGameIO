@@ -7,7 +7,7 @@
     "start": "node server",
     "dev": "nodemon server"
   },
-  "author": "",
+  "author": "Beau Costoff",
   "license": "ISC",
   "devDependencies": {
     "nodemon": "2.0.14"
