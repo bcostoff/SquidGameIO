@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<link rel="shortcut icon" href="favicon.ico" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+<script src='https://www.google.com/recaptcha/api.js'></script>
+
+<!-- Bootstrap Framework  v5.1.x-->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+
+<style>
+@font-face {
+    font-family: 'ds-digitalbold_italic';
+    src: url('fonts/ds-digit.woff2') format('woff2'),
+            url('fonts/ds-digit.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+html{
+    background-color: #151515;
+    background-image: url('img/bg-pattern.jpg');
+    background-repeat: repeat;
+    background-size: 16px 16px;    
+    font-family: Helvetica, Arial, sans-serif;  
+    line-height: normal;
+}
+body{
+    background-color: transparent;
+}
+header{
+    background-color: #000000;
+    height: 50px;
+    color: #FFFFFF;
+    line-height: normal; 
+    font-weight: 600;
+}
+
+p, h1, h2, h3{
+    margin: 0;
+    padding: 0;
+}
+.dig{font-family: 'ds-digitalbold_italic', Helvetica, sans-serif; font-size: 22px;}
+.p{ color: #e5427e; }
+.w{ color: #ffffff; }
+.b{ color: #151515; }
+.r{ color: #CC2626; }
+.g{ color: #4D9000; }
+
+.light{ display: none; padding: 3px 0px; }
+.light.active{ display: block; }
+.finish-line{
+    width: 100%;
+    height: 5px;
+    background-color: #FFFFFF;
+}
+
+button{
+ position: fixed;
+ bottom: 20%;
+ left: 50%;
+ transform: translate(-50%, -50%);
+ background-color: #e5427e;
+ padding: 3px 23px;
+ border-radius: 50px;
+ font-size: 2em;
+ font-weight: 600;
+ color: #FFFFFF;
+ z-index: 100;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  padding:0px;
+  margin:0px;;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+#elimination-overlay{
+  background-color: rgba(0,0,0,0.6);
+  text-align: center!important;
+  height: 100vh;
+  z-index: 1000;
+  color: #FFFFFF;
+  font-family: 'ds-digitalbold_italic', Helvetica, sans-serif; 
+  font-size: 36px;
+  display: none;
+  padding-top: 40%;
+}
+
+</style>
+
+</head>
+
+<body>
+    
+<header class="d-flex align-items-center">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-4 text-start"><p class="dig"><span id="participating">0</span>/<span id="capacity">0</span></p></div>
+            <div class="col-4 text-center">S<span class="p">Q</span>UID G<span class="p">A</span>M<span class="p">E</span></div>
+            <div class="col-4 text-end"><p class="dig p" id="timer">01:00</p></div>
+        </div>
+    </div>
+</header>
+
+
+<main>
+    <div id="elimination-overlay" class="col-12">PLAYER 1<br>ELIMINATED</div>
+    <div class="col-12 text-center bg-white">
+        <p id="eliminations"></p>
+        <p id="ready" class="dig light active">GET READY</p>
+        <p id="stop" class="dig light r">RED LIGHT</p>
+        <p id="go" class="dig light g">GREEN LIGHT</p>
+        <div class="finish-line"></div>
+    </div>
+ 
+    <canvas id="squid"></canvas>
+
+    <button id="run" class="run-btn">RUN</button>
+
+</main>
+
+
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.min.js" integrity="sha384-skAcpIdS7UcVUC05LJ9Dxay8AXcDYfBJqt1CJ85S/CFujBsIzCIv+l9liuYLaMQ/" crossorigin="anonymous"></script>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/script.js"></script>
+<script src="js/graphics.js"></script>
+<script src="js/helpers.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/class.player.js"></script>
+
+</html>
