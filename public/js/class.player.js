@@ -15,6 +15,7 @@ class Entity{
       this.type = type;
       this.alive = true;
       this.id = id;
+      this.room = "";
       this.data = { x: this.x, y: this.y, alive: this.alive, id: this.id }
     } 
   
@@ -29,7 +30,7 @@ class Entity{
     update(){
       if (this.moving) {
           this.y -= 1;
-          this.data = { x: this.x, y: this.y, alive: this.alive, id: this.id }
+          this.data = { x: this.x, y: this.y, alive: this.alive, id: this.id, room: this.room }
           this.sendToServer(this.data);
       }
     }
@@ -37,7 +38,7 @@ class Entity{
     kill() {
       if (!this.alive) {
         createParticles();
-        this.data = { x: this.x, y: this.y, alive: this.alive, id: this.id }
+        this.data = { x: this.x, y: this.y, alive: this.alive, id: this.id, room: this.room }
         socket.emit('player eliminated', this.data);
       }
     }
