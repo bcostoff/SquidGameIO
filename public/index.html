@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 
-<!-- <link rel="shortcut icon" href="favicon.ico" /> -->
+<link rel="shortcut icon" href="favicon.ico" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
@@ -57,15 +57,25 @@ p, h1, h2, h3{
     background-color: #FFFFFF;
 }
 
-button{
+button.run-btn{
  position: fixed;
- bottom: 20%;
+ bottom: 5%;
  left: 50%;
  transform: translate(-50%, -50%);
  background-color: #e5427e;
  padding: 3px 23px;
  border-radius: 50px;
  font-size: 2em;
+ font-weight: 600;
+ color: #FFFFFF;
+ z-index: 100;
+}
+
+button.room-btn{
+ background-color: #e5427e;
+ padding: 3px 23px;
+ border-radius: 50px;
+ font-size: .8em;
  font-weight: 600;
  color: #FFFFFF;
  z-index: 100;
@@ -92,38 +102,84 @@ canvas {
   padding-top: 40%;
 }
 
+#game{
+    display:none;
+}
+
 </style>
 
 </head>
 
 <body>
-    
-<header class="d-flex align-items-center">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-4 text-start"><p class="dig"><span id="participating">0</span>/<span id="capacity">0</span></p></div>
-            <div class="col-4 text-center">S<span class="p">Q</span>UID G<span class="p">A</span>M<span class="p">E</span></div>
-            <div class="col-4 text-end"><p class="dig p" id="timer">01:00</p></div>
+
+<section id="lobby">
+
+    <header class="d-flex align-items-center">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 text-center">S<span class="p">Q</span>UID G<span class="p">A</span>M<span class="p">E</span></div>
+            </div>
         </div>
-    </div>
-</header>
+    </header>
+
+    <main>
+        <div class="container"></div>
+        <div class="row my-5">
+            <div class="col-12 text-center">
+                <h1 class="w">Game Lobby</h1>
+                <p class="w">Choose a Room.</p>
+
+            </div>
+        </div>
+
+        <div class="row my-5 text-center">
+            <div class="col-10 col-offset-2"><button id="joinRoom" class="room-btn" onclick="createRoom()">Create Room</button></div>
+        </div>
+
+        
+
+        <div class="row my-5">
+            <div id="rooms" class="col-12">
+
+            </div>
+        </div>
+
+    </main>
+
+</section>
+
+<section id="game">
+    
+    <header class="d-flex align-items-center">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-4 text-start"><p class="dig"><span id="participating">0</span>/<span id="capacity">0</span></p></div>
+                <div class="col-4 text-center">S<span class="p">Q</span>UID G<span class="p">A</span>M<span class="p">E</span></div>
+                <div class="col-4 text-end"><p class="dig p" id="timer">01:00</p></div>
+            </div>
+        </div>
+    </header>
 
 
-<main>
-    <div id="elimination-overlay" class="col-12">PLAYER 1<br>ELIMINATED</div>
-    <div class="col-12 text-center bg-white">
-        <p id="eliminations"></p>
-        <p id="ready" class="dig light active">GET READY</p>
-        <p id="stop" class="dig light r">RED LIGHT</p>
-        <p id="go" class="dig light g">GREEN LIGHT</p>
-        <div class="finish-line"></div>
-    </div>
- 
-    <canvas id="squid"></canvas>
 
-    <button id="run" class="run-btn">RUN</button>
 
-</main>
+    <main>
+        <div id="elimination-overlay" class="col-12">PLAYER 1<br>ELIMINATED</div>
+        <div class="col-12 text-center bg-white">
+            <p id="eliminations"></p>
+            <p id="ready" class="dig light active">GET READY</p>
+            <p id="stop" class="dig light r">RED LIGHT</p>
+            <p id="go" class="dig light g">GREEN LIGHT</p>
+            <div class="finish-line"></div>
+        </div>
+        
+        <canvas id="squid"></canvas>
+        
+
+        <button id="run" class="run-btn">RUN</button>
+
+    </main>
+</section>
 
 
 </body>
@@ -136,5 +192,6 @@ canvas {
 <script src="js/helpers.js"></script>
 <script src="js/particles.js"></script>
 <script src="js/class.player.js"></script>
+
 
 </html>
