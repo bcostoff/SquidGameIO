@@ -55,6 +55,7 @@ function updateParticles(){
     if(circleList.items.length == 0){
       //valid = false;
       document.getElementById("elimination-overlay").style.display = "block";
+      setTimeout(() => { leaveRoom(player.room); document.getElementById("elimination-overlay").style.display = "none"; }, 2000, player);
       // cancelAnimationFrame(animationId);
     }
     // console.log(circleList.items.length);
