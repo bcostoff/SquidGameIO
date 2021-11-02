@@ -21,7 +21,7 @@ let roomList = [];
 //Run when client connects
 io.on('connection', socket => {
     // console.log('New Squid Game Connection: ' + socket.id);
-    io.emit('list rooms', socket.rooms);
+    io.emit('list rooms', roomList);
 
     // console.log(socket.rooms);
 
