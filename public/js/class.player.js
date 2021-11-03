@@ -17,14 +17,19 @@ class Entity{
       this.id = id;
       this.room = "";
       this.name = "";
+      this.shape = "";
       this.data = { x: this.x, y: this.y, alive: this.alive, id: this.id }
     } 
   
     draw() {
         if (this.type == 'player') { 
             drawTriangle(this.x, this.y, this.w, this.h, '#e63178');
-        }else if(this.type == 'opponent') {
-            drawTriangle(this.x, this.y, this.w, this.h, 'white');
+        } else if (this.type == 'opponent') {
+          if (this.shape == 'rect') {
+            fillRect(this.x, this.y, this.w, this.h, 'white');
+          } else if (this.shape == 'circ') {
+            fillCircle(this.x, this.y, this.w/1.5, 'white');
+          }
         }
     }
     
