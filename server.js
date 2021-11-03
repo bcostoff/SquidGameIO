@@ -21,18 +21,19 @@ let roomList = [];
 //Run when client connects
 io.on('connection', socket => {
     // console.log('New Squid Game Connection: ' + socket.id);
+    
     io.emit('list rooms', roomList);
 
     // console.log(socket.rooms);
 
     //Welcome current user
-    socket.emit('message', 'Welcome to Squid Game');
+    socket.emit('message', 'Welcome to Squid Game: ' + socket.id);
 
     num_of_players++;
 
-    socket.on('create room', function (room) {
+    socket.on('create room', function (data) {
         try {
-            socket.join(room, function() {
+            socket.join(data.room, function() {
                 // console.log("Socket now in rooms", socket.rooms);
                 // io.to(room).emit('user joined', socket.id);
 
@@ -43,18 +44,18 @@ io.on('connection', socket => {
                     console.log('Player not found: ' + socket.id)
                     return
                 }
-
-                var clients = io.sockets.adapter.rooms[room].sockets;
+                
+                var clients = io.sockets.adapter.rooms[data.room].sockets;
                 var numClients = clients ? Object.keys(clients).length : 0;
 
-                currentPlayer.setRoom(room);
+                currentPlayer.setRoom(data.room);
                 currentPlayer.setName(numClients);
 
-                var r = { roomName: room, locked: false, numClients: numClients }
+                var r = { roomName: data.room, locked: false, numClients: numClients, capacity: data.capacity }
                 roomList.push(r);
                 io.emit('list rooms', roomList);
-                io.to(room).emit('player count', { numClients: numClients })
-                socket.emit('join room', { room: room });
+                io.to(data.room).emit('player count', { numClients: numClients })
+                socket.emit('join room', { room: data.room, name: currentPlayer.getName() });
             });
         }catch(e){
             console.log('[error]','join room :',e);
@@ -83,11 +84,17 @@ io.on('connection', socket => {
                 currentPlayer.setRoom(room);
                 currentPlayer.setName(numClients);
 
-                var r = { roomName: room, locked: false, numClients: numClients }
-                roomList.push(r);
+                //EDIT ROOM IN ROOM LIST
+                roomList.find( function (r) {
+                    if (r.roomName !== room) return false;
+                    r.locked = true;
+                    r.numClients = numClients;
+                    return true;
+                } );
+
                 io.emit('list rooms', roomList);
                 io.to(room).emit('player count', { numClients: numClients })
-                socket.emit('join room', { room: room });
+                socket.emit('join room', { room: room, name: currentPlayer.getName() });
             });
         }catch(e){
             console.log('[error]','join room :',e);
@@ -96,9 +103,9 @@ io.on('connection', socket => {
     });
 
 
-    socket.on('leave room', function (room) {
+    socket.once('leave room', function (room) {
         try {
-            // console.log(room)
+            console.log('Player ' + socket.id + ' leaving room');
             // socket.to(room).emit('user left', socket.id);
             
             var currentPlayer = playerById(socket.id);
@@ -109,19 +116,40 @@ io.on('connection', socket => {
                 return
             }
 
+            socket.leave(room);
+
             // var clients = io.sockets.adapter.rooms[room].sockets;
             // var numClients = clients ? Object.keys(clients).length : 0;
-            // var obj = getByValue(roomList, room);
 
+            var removeRoom = false;
+            //CHECK IF ROOM HAS ANYONE LEFT, IF NOT REMOVE
+            roomList.find( function (r) {
+                if (r.roomName !== room) return false;
+                var playersLeft = r.numClients - 1;
+                if (playersLeft === 0) {
+                    removeRoom = true;
+                    return false;
+                } else {
+                    r.numClients = playersLeft;
+                    
+                    io.to(room).emit('player count', { numClients: playersLeft })
+                    io.to(room).emit('leave room', { id: currentPlayer.id, numClients: playersLeft, name: currentPlayer.getName() });
+
+                }
+                return true;
+            });
 
             currentPlayer.setRoom('');
             currentPlayer.setName('');
-
-            socket.leave(room);
+            
+            if (removeRoom) {
+                const index = roomList.findIndex(item => item.roomName === room);
+                roomList.splice(index,1);
+            }
 
             io.emit('list rooms', roomList);
-            io.to(room).emit('player count', { numClients: 1 })
-            socket.emit('leave room', { id: socket.id, numClients: 1 });
+            // io.to(room).emit('player count', { numClients: numClients })
+            // io.to(room).emit('leave room', { id: currentPlayer.id, numClients: numClients });
             
         }catch(e){
             console.log('[error]','leave room :',e);
@@ -159,19 +187,42 @@ io.on('connection', socket => {
             return
         }
 
-        // // Remove player from players array
-        players.splice(players.indexOf(removePlayer), 1)
+        var removeRoom = false;
+        //CHECK IF ROOM HAS ANYONE LEFT, IF NOT REMOVE
+        roomList.find( function (r) {
+            if (r.roomName !== removePlayer.getRoom()) return false;
+            var playersLeft = r.numClients - 1;
+            if (playersLeft === 0) {
+                removeRoom = true;
+                return false;
+            } else {
+                r.numClients = playersLeft;
+                
+                io.to(removePlayer.getRoom()).emit('player count', { numClients: playersLeft })
+                io.to(removePlayer.getRoom()).emit('leave room', { id: removePlayer.id, numClients: playersLeft, name: removePlayer.getName() });
 
-        // // Broadcast removed player to connected socket clients
-        socket.broadcast.to(removePlayer.getRoom()).emit('remove player', { id: socket.id, numClients: 1 })
+            }
+            return true;
+        });
+        
+        if (removeRoom) {
+            const index = roomList.findIndex(item => item.roomName === removePlayer.getRoom());
+            roomList.splice(index,1);
+        }
+
+        // Broadcast removed player to connected socket clients
+        socket.to(removePlayer.getRoom()).emit('remove player', { id: socket.id, numClients: 1 })
+
+        // Remove player from players array
+        players.splice(players.indexOf(removePlayer), 1)
     })
 
-    socket.on('new player', data => {
-        var newPlayer = new Player(data.x, data.y, data.alive, data.id)
+    socket.once('new player', data => {
+        var newPlayer = new Player(data.x, data.y, data.alive, data.id, data.room)
         // console.log('New player ' + newPlayer.id)
 
         // Broadcast new player to connected socket clients
-        socket.broadcast.emit('new player', { id: newPlayer.id, x: newPlayer.getX(), y: newPlayer.getY(), alive: newPlayer.getAlive(), num_of_players: num_of_players })
+        socket.to(data.room).emit('new player', { id: newPlayer.id, x: newPlayer.getX(), y: newPlayer.getY(), alive: newPlayer.getAlive(), num_of_players: num_of_players })
 
         // Send existing players to the new player
         var i, existingPlayer;
