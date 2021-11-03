@@ -94,7 +94,14 @@ socket.on('new player', data => {
   }
 
   //ADD EXISTING PLAYERS TO OPPONENTS ARRAY
-  opponents.push(new Player(data.x - 100, data.y, 16, 15, "opponent", data.id))
+  var opp = new Player(data.x - 100, data.y, 16, 15, "opponent", data.id);
+  var rand = Math.ceil(Math.random() * 10);
+  if (rand > 5) {
+    opp.shape = 'rect';
+  } else {
+    opp.shape = 'circ';
+  }
+  opponents.push(opp)
   // console.log(opponents);
 })
 
@@ -330,7 +337,7 @@ function removePlayer(id,numClients) {
     return
   }
 
-  console.log(opponents)
+  // console.log(opponents)
   // Remove player from array
   opponents.splice(opponents.indexOf(removePlayer), 1)
 }
