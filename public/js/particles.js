@@ -54,8 +54,13 @@ function updateParticles(){
     // ctx.fill();
     if(circleList.items.length == 0){
       //valid = false;
+      cancelAnimationFrame(animation);
+      document.getElementById("player-eliminated").innerText = player.name;
       document.getElementById("elimination-overlay").style.display = "block";
-      setTimeout(() => { leaveRoom(player.room); document.getElementById("elimination-overlay").style.display = "none"; }, 2000, player);
+      setTimeout(() => {
+        leaveRoom(player.room);
+        document.getElementById("elimination-overlay").style.display = "none";
+      }, 2000, player);
       // cancelAnimationFrame(animationId);
     }
     // console.log(circleList.items.length);
