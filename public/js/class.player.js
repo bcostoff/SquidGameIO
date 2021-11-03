@@ -16,6 +16,7 @@ class Entity{
       this.alive = true;
       this.id = id;
       this.room = "";
+      this.name = "";
       this.data = { x: this.x, y: this.y, alive: this.alive, id: this.id }
     } 
   
@@ -27,11 +28,13 @@ class Entity{
         }
     }
     
-    update(){
-      if (this.moving) {
+    update() {
+      if (gameStarted) {
+        if (this.moving) {
           this.y -= 1;
           this.data = { x: this.x, y: this.y, alive: this.alive, id: this.id, room: this.room }
           this.sendToServer(this.data);
+        }
       }
     }
 
