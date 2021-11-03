@@ -1,15 +1,21 @@
 //-------GRAPHIC FUNCTIONS START------//
  
 function fillRect(x,y,w,h,color){
-    ctx.fillStyle = color;
-    ctx.fillRect(x,y,w,h);
+    // ctx.fillStyle = color;
+    // ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = color;
+    ctx.lineWidth=4;
+    ctx.strokeRect(x, y, w, h);
   }
    
   function fillCircle(centerX,centerY,radius,color){
-    ctx.fillStyle=color;
+    // ctx.fillStyle=color;
     ctx.beginPath();
-    ctx.arc(centerX,centerY,radius,0,Math.PI*2);
-    ctx.fill();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    // ctx.fill();
   }
    
   function drawBitmapCenteredWithRotation(useBitmap,x,y,angle,scaleX,scaleY){
