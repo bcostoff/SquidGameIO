@@ -5,7 +5,7 @@ var picsToLoad = 0;
 var gameOver = false;
 var player;
 var p;
-var gameTime = 0;
+var gameTime = '';
 var moving = false;
 const CANVAS_WIDTH = window.innerWidth;
 const CANVAS_HEIGHT = window.innerHeight;
@@ -132,8 +132,11 @@ socket.on('player count', function (data) {
 socket.on('update time', function (data) {
   var minutes = data.minutes;
   var seconds = data.seconds;
-  var display = document.querySelector('#timer');
-  display.textContent = minutes + ":" + seconds;
+  if (gameTime !== '00:00') {
+    var display = document.querySelector('#timer');
+    display.textContent = minutes + ":" + seconds;
+  }
+  gameTime = minutes + ":" + seconds;
 });
 
 socket.on('player eliminated', function (data) {
@@ -157,28 +160,30 @@ socket.on('join room', data => {
   //console.log(data)
   //console.log(data + ' joined room')
   player.room = data.room;
+  player.name = data.name;
   document.getElementById('lobby').style.display = "none";
   document.getElementById('game').style.display = "block";
 })
 
 
 socket.on('leave room', data => {
-  //console.log(data)
-  //console.log(data + ' joined room')
-  cancelAnimationFrame(animation);
   removePlayer(data.id, data.numClients);
-  document.getElementById('lobby').style.display = "block";
-  document.getElementById('game').style.display = "none";
+  document.getElementById('eliminations').innerText = 'Player ' + data.name + ' Eliminated!';
 })
 
 
 socket.on('list rooms', function (data) {
+  console.log(data)
   var arr = Object.values(data);
+  var output = '';
   arr.forEach(element => {
-    var myClass;
-    element.locked ? myClass = ' disabled ' : myClass = '';
-    document.getElementById('rooms').innerHTML = '<div class="col-6 my-3"><button class="room-btn ' + myClass + '" onclick="joinRoom(\'' + element.roomName + '\')" ' + myClass + '>Join Room ' + element.numClients + '/' + capacity + '</button></div>';
+    if (element.locked) {
+      output += '<div class="col-6 my-3"><button class="room-btn disabled">Full</button></div>';
+    } else {
+      output += '<div class="col-6 my-3"><button class="room-btn" onclick="joinRoom(\'' + element.roomName + '\')">Join Room ' + element.numClients + '/' + capacity + '</button></div>';
+    }
   });
+  document.getElementById('rooms').innerHTML = output;
 })
 
 
@@ -242,40 +247,29 @@ function readableRandomStringMaker(length) {
 }
 
 function createRoom() {
-  player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 400, 16, 15, 'player', socket.id);
-  //SEND LOCAL DATA TO SERVER
-  socket.emit('new player', { x: player.x, y: player.y, alive: player.alive, id: player.id })
+  opponents = [];
   var room = readableRandomStringMaker(12);
-  socket.emit('create room', room);
+  player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 400, 16, 15, 'player', socket.id);
+  socket.emit('new player', { x: player.x, y: player.y, alive: player.alive, id: player.id, room: room })
+  socket.emit('create room', { room: room, capacity: capacity });
   document.getElementById('capacity').innerText = capacity;
 }
 
 function joinRoom(room) {
   player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 400, 16, 15, 'player', socket.id);
-  //SEND LOCAL DATA TO SERVER
-  socket.emit('new player', { x: player.x, y: player.y, alive: player.alive, id: player.id })
+  socket.emit('new player', { x: player.x, y: player.y, alive: player.alive, id: player.id, room: room })
   socket.emit('join room', room);
   document.getElementById('capacity').innerText = capacity;
 }
 
 function leaveRoom(room) {
   socket.emit('leave room', room);
+  document.getElementById('lobby').style.display = "block";
+  document.getElementById('game').style.display = "none";
 }
 
 var update = function(){
   ctx.clearRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
-  if(player.moving && !go && player.alive){
-    player.alive = false;
-    player.kill();
-  }
-  if(player.alive){
-    player.draw();
-    player.update();
-  }
-  opponents.forEach(function (opponent) {
-    opponent.draw();
-  })
-  gameTime++;
   timer--;
   //document.getElementById("timer").innerText = timer;
   if(timer==0){
@@ -292,6 +286,21 @@ var update = function(){
       timer = randomIntFromInterval(3,8)*30;
     }
   }
+  if (gameTime == '00:00') {
+    player.alive = false;
+    player.kill();
+  }
+  if(player.moving && !go && player.alive){
+    player.alive = false;
+    player.kill();
+  }
+  if(player.alive){
+    player.draw();
+    player.update();
+  }
+  opponents.forEach(function (opponent) {
+    opponent.draw();
+  })
   if(!player.alive){
     updateParticles();
   }
@@ -317,10 +326,11 @@ function removePlayer(id,numClients) {
 
   // Player not found
   if (!removePlayer) {
-    // console.log('Player not found: ', data.id)
+    console.log('Player not found: ', id)
     return
   }
 
+  console.log(opponents)
   // Remove player from array
   opponents.splice(opponents.indexOf(removePlayer), 1)
 }
