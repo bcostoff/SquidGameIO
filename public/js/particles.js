@@ -54,13 +54,13 @@ function updateParticles(){
     // ctx.fill();
     if(circleList.items.length == 0){
       //valid = false;
+      paused = true;
       cancelAnimationFrame(animation);
-      document.getElementById("player-eliminated").innerText = player.name;
-      document.getElementById("elimination-overlay").style.display = "block";
-      setTimeout(() => {
-        leaveRoom(player.room);
-        document.getElementById("elimination-overlay").style.display = "none";
-      }, 2000, player);
+      leaveRoom(player.room,player.alive);
+      // setTimeout(() => {
+      //   leaveRoom(player.room);
+      //   document.getElementById("elimination-overlay").style.display = "none";
+      // }, 2000, player);
       // cancelAnimationFrame(animationId);
     }
     // console.log(circleList.items.length);
@@ -120,68 +120,68 @@ const circle = {
           y: player.y
         },
         {
-          x: player.x+8,
-          y: player.y+15
-        },
-        {
-          x: player.x+4,
-          y: player.y+15
-        },
-        {
           x: player.x+4,
           y: player.y+8
         },
         {
-          x: player.x-4,
+          x: player.x+2,
           y: player.y+8
-        },
-        {
-          x: player.x-8,
-          y: player.y+15
-        },
-        {
-          x: player.x-2,
-          y: player.y+4
         },
         {
           x: player.x+2,
           y: player.y+4
         },
         {
-          x: player.x-6,
-          y: player.y+12
+          x: player.x-2,
+          y: player.y+4
         },
         {
-          x: player.x+6,
-          y: player.y+12
+          x: player.x-4,
+          y: player.y+8
+        },
+        {
+          x: player.x-1,
+          y: player.y+2
+        },
+        {
+          x: player.x+1,
+          y: player.y+2
+        },
+        {
+          x: player.x-3,
+          y: player.y+6
+        },
+        {
+          x: player.x+3,
+          y: player.y+6
         },
         {
           x: player.x,
-          y: player.y+15
+          y: player.y+8
         },
         {
-          x: player.x-6,
-          y: player.y+15
-        },
-        {
-          x: player.x-4,
-          y: player.y+15
+          x: player.x-3,
+          y: player.y+8
         },
         {
           x: player.x-2,
-          y: player.y+15
+          y: player.y+8
+        },
+        {
+          x: player.x-1,
+          y: player.y+8
+        },
+        {
+          x: player.x+1,
+          y: player.y+8
         },
         {
           x: player.x+2,
-          y: player.y+15
+          y: player.y+8
         },
         {
-          x: player.x+4,
-          y: player.y+15
-        },
-        {
-          x: player.x+6,
-          y: player.y+15
+          x: player.x+3,
+          y: player.y+8
         },
         ]
         var randomCombo = combo[Math.floor(Math.random()*combo.length)];
@@ -243,7 +243,7 @@ const circle = {
             ctx.beginPath();
             ctx.moveTo(x + this.size,y);
             ctx.arc(x,y,this.size,0,Math.PI * 2);
-            ctx.fillStyle = "#e63178";
+            ctx.fillStyle = "#ffffff";
             ctx.fill();
             ctx.globalAlpha = 1;
         }else{
