@@ -23,22 +23,28 @@ class Entity{
   
     draw() {
         if (this.type == 'player') { 
-            drawTriangle(this.x, this.y, this.w, this.h, '#e63178');
+            drawTriangle(this.x, this.y, this.w, this.h, '#ffffff');
         } else if (this.type == 'opponent') {
           if (this.shape == 'rect') {
-            fillRect(this.x, this.y, this.w, this.h, 'white');
+            fillRect(this.x, this.y, this.w, this.h, '#e63178');
           } else if (this.shape == 'circ') {
-            fillCircle(this.x, this.y, this.w/1.5, 'white');
+            fillCircle(this.x, this.y, this.w/1.5, '#e63178');
           }
         }
     }
     
     update() {
       if (gameStarted) {
-        if (this.moving) {
-          this.y -= 1;
-          this.data = { x: this.x, y: this.y, alive: this.alive, id: this.id, room: this.room }
-          this.sendToServer(this.data);
+        if ((this.y + this.h) <= 0) {
+          paused = true;
+          cancelAnimationFrame(animation);
+          leaveRoom(this.room,this.alive);
+        } else {
+          if (this.moving) {
+            this.y -= 1;
+            this.data = { x: this.x, y: this.y, alive: this.alive, id: this.id, room: this.room }
+            this.sendToServer(this.data);
+          }
         }
       }
     }
