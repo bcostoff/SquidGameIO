@@ -4,7 +4,7 @@ function fillRect(x,y,w,h,color){
     // ctx.fillStyle = color;
     // ctx.fillRect(x, y, w, h);
     ctx.strokeStyle = color;
-    ctx.lineWidth=4;
+    ctx.lineWidth=3;
     ctx.strokeRect(x, y, w, h);
   }
    
@@ -13,7 +13,7 @@ function fillRect(x,y,w,h,color){
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
     ctx.strokeStyle = color;
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 3;
     ctx.stroke();
     // ctx.fill();
   }
@@ -72,7 +72,7 @@ function fillRect(x,y,w,h,color){
       ctx.lineTo(x-(w/2), y+h);
       ctx.closePath();
       ctx.strokeStyle = colour;
-      ctx.lineWidth=4;
+      ctx.lineWidth=3;
       ctx.stroke();
   }
    
