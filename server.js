@@ -17,12 +17,13 @@ let players = [];	// Array of connected players
 let num_of_players = 0 // Player count
 let started = false
 let roomList = [];
+let capacity = 50;
 
 //Run when client connects
 io.on('connection', socket => {
     // console.log('New Squid Game Connection: ' + socket.id);
     
-    io.emit('list rooms', roomList);
+    // io.emit('list rooms', roomList);
 
     // console.log(socket.rooms);
 
@@ -30,6 +31,106 @@ io.on('connection', socket => {
     socket.emit('message', 'Welcome to Squid Game: ' + socket.id);
 
     num_of_players++;
+
+    socket.on('quick play', data => {
+        roomCount = roomList.length;
+        if (roomCount < 1) {
+            var room = readableRandomStringMaker(12);
+            try {
+                socket.join(room, function() {
+                    // console.log("Socket now in rooms", socket.rooms);
+                    // io.to(room).emit('user joined', socket.id);
+                    var newPlayer = new Player(data.x, data.y, data.alive, data.id)
+
+                    // Broadcast this socket client to other connected socket clients
+                    socket.to(room).emit('new player', { id: newPlayer.id, x: newPlayer.getX(), y: newPlayer.getY(), alive: newPlayer.getAlive() })
+
+                    // Send existing players to the this socket client
+                    var i, existingPlayer;
+                    if (players.length > 0) {
+                        for (i = 0; i < players.length; i++) {
+                            existingPlayer = players[i];
+                            socket.emit('new player', { id: existingPlayer.id, x: existingPlayer.getX(), y: existingPlayer.getY(), alive: existingPlayer.getAlive() })
+                        }
+                    }
+
+                    var clients = io.sockets.adapter.rooms[room].sockets;
+                    var numClients = clients ? Object.keys(clients).length : 0;
+                    
+                    newPlayer.setRoom(room);
+                    newPlayer.setName(numClients);
+
+                    // Add new player to the players array
+                    players.push(newPlayer)
+
+                    var locked;
+                    if (numClients == capacity) {
+                        locked = true;
+                    } else {
+                        locked = false;
+                    }
+    
+                    var r = { roomName: room, locked: locked, numClients: numClients, capacity: capacity }
+                    roomList.push(r);
+                    io.to(room).emit('player count', { numClients: numClients })
+                    socket.emit('join room', { room: room, name: newPlayer.getName() });
+                });
+            }catch(e){
+                console.log('[error]','join room :',e);
+                socket.emit('error','couldnt perform requested action');
+            }
+            
+        } else {
+            roomList.every(element => {
+                if (!element.locked) {
+                    try {
+                        socket.join(element.roomName, function() {
+                            // console.log("Socket now in rooms", socket.rooms);
+                            // io.to(room).emit('user joined', socket.id);
+                            var newPlayer = new Player(data.x, data.y, data.alive, data.id)
+
+                            // Broadcast this socket client to other connected socket clients
+                            socket.to(element.roomName).emit('new player', { id: newPlayer.id, x: newPlayer.getX(), y: newPlayer.getY(), alive: newPlayer.getAlive() })
+
+                            // Send existing players to the this socket client
+                            var i, existingPlayer;
+                            if (players.length > 0) {
+                                for (i = 0; i < players.length; i++) {
+                                    existingPlayer = players[i];
+                                    socket.emit('new player', { id: existingPlayer.id, x: existingPlayer.getX(), y: existingPlayer.getY(), alive: existingPlayer.getAlive() })
+                                }
+                            }
+
+                            var clients = io.sockets.adapter.rooms[element.roomName].sockets;
+                            var numClients = clients ? Object.keys(clients).length : 0;
+                            
+                            newPlayer.setRoom(element.roomName);
+                            newPlayer.setName(numClients);
+
+                            // Add new player to the players array
+                            players.push(newPlayer)
+            
+                            //EDIT ROOM IN ROOM LIST
+                            roomList.find( function (r) {
+                                if (r.roomName !== element.roomName) return false;
+                                if (numClients == capacity) r.locked = true
+                                r.numClients = numClients;
+                                return true;
+                            } );
+
+                            io.to(element.roomName).emit('player count', { numClients: numClients })
+                            socket.emit('join room', { room: element.roomName, name: newPlayer.getName() });
+                        });
+                    }catch(e){
+                        console.log('[error]','join room :',e);
+                        socket.emit('error','couldnt perform requested action');
+                    }
+                    return false;
+                }
+                return true;
+            });
+        }
+    })
 
     socket.on('create room', function (data) {
         try {
@@ -147,7 +248,7 @@ io.on('connection', socket => {
                 roomList.splice(index,1);
             }
 
-            io.emit('list rooms', roomList);
+            // io.emit('list rooms', roomList);
             // io.to(room).emit('player count', { numClients: numClients })
             // io.to(room).emit('leave room', { id: currentPlayer.id, numClients: numClients });
             
@@ -238,6 +339,26 @@ io.on('connection', socket => {
         players.push(newPlayer)
     })
 
+
+    socket.on('start rules', data => {
+        // if (!rules) {
+            duration = 5;
+            var timer = duration, seconds;
+            const r = setInterval(function () {
+                seconds = parseInt(timer % 60, 10);
+                seconds = seconds < 10 ? seconds : seconds;
+                io.to(data.room).emit('update rule time', { seconds: seconds })
+                if (--timer < 0) {
+                    // timer = duration;
+                    // rules = false;
+                    clearInterval(r);
+                }
+            }, 1000);
+            // rules = true;
+        // }
+    })
+
+
     socket.on('start game', () => {
         var currentPlayer = playerById(socket.id);
 
@@ -249,7 +370,7 @@ io.on('connection', socket => {
         if (!started) {
             duration = 60;
             var timer = duration, minutes, seconds;
-            setInterval(function () {
+            const interval = setInterval(function () {
                 minutes = parseInt(timer / 60, 10);
                 seconds = parseInt(timer % 60, 10);
 
@@ -259,7 +380,9 @@ io.on('connection', socket => {
                 io.to(currentPlayer.getRoom()).emit('update time', { minutes: minutes, seconds: seconds })
 
                 if (--timer < 0) {
-                    timer = duration;
+                    // timer = duration;
+                    started = false;
+                    clearInterval(interval);
                 }
             }, 1000);
             started = true;
@@ -368,4 +491,10 @@ function getByValue(arr, value) {
   
       if (arr[i].b == value) return arr[i];
     }
-  }
+}
+  
+function readableRandomStringMaker(length) {
+    for (var s=''; s.length < length; s += 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.charAt(Math.random()*62|0));
+    return s;
+}
+  
