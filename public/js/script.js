@@ -19,13 +19,12 @@ var opponents = [];
 var capacity = 2;
 var totalPlayers = 0;
 var animation;
+var paused = true;
 
 
 var bgPic = new Image();
 
 var initGame = function(){
-  // canvas = document.getElementById("squid");
-  // ctx = canvas.getContext("2d");
   ctx.canvas.width = CANVAS_WIDTH;
   ctx.canvas.height = CANVAS_HEIGHT;
   ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
@@ -94,7 +93,7 @@ socket.on('new player', data => {
   }
 
   //ADD EXISTING PLAYERS TO OPPONENTS ARRAY
-  var opp = new Player(data.x - 100, data.y, 16, 15, "opponent", data.id);
+  var opp = new Player(data.x - 100, data.y, 8, 8, "opponent", data.id);
   var rand = Math.ceil(Math.random() * 10);
   if (rand > 5) {
     opp.shape = 'rect';
@@ -102,7 +101,7 @@ socket.on('new player', data => {
     opp.shape = 'circ';
   }
   opponents.push(opp)
-  // console.log(opponents);
+  console.log(opponents);
 })
 
 
@@ -127,11 +126,12 @@ socket.on('remove player', data => {
 
 socket.on('player count', function (data) {
   var playerCount = data.numClients;
-  document.getElementById('participating').innerText = playerCount;
+  let a = document.getElementsByClassName('participating');
+  [...a].forEach( x => x.innerText = playerCount );
   // totalPlayers = playerCount;
   // console.log('There are currently ' + playerCount + ' players participating.')
   if (playerCount == capacity) {
-    initGame();
+    manualStart();
   }
 });
 
@@ -139,26 +139,35 @@ socket.on('player count', function (data) {
 socket.on('update time', function (data) {
   var minutes = data.minutes;
   var seconds = data.seconds;
-  if (gameTime !== '00:00') {
-    var display = document.querySelector('#timer');
-    display.textContent = minutes + ":" + seconds;
-  }
+  var display = document.querySelector('#timer');
+  display.textContent = minutes + ":" + seconds;
   gameTime = minutes + ":" + seconds;
 });
 
+
+socket.on('update rule time', function (data) {
+  var seconds = data.seconds;
+  var display = document.querySelector('#ruleTimer');
+  display.textContent = seconds;
+  if (seconds == 0) {
+    document.getElementById('rules').classList.toggle("hidden");
+    document.getElementById('game').classList.toggle("hidden");
+    initGame();
+  }
+});
+
 socket.on('player eliminated', function (data) {
-  document.getElementById('eliminations').innerText = 'Player ' + data.name + ' Eliminated!';
+  console.log('Player ' + data.name + ' Eliminated!')
+  // document.getElementById('eliminations').innerText = 'Player ' + data.name + ' Eliminated!';
 });
 
 socket.on('flip switch', function (data) {
   if(data.go){
-    document.getElementById("stop").classList.remove("active");
-    document.getElementById("ready").classList.remove("active");
-    document.getElementById("go").classList.add("active");
-  }else{
-    document.getElementById("stop").classList.add("active");
-    document.getElementById("ready").classList.remove("active");
-    document.getElementById("go").classList.remove("active");
+    // document.getElementById("ready").classList.remove("active");
+    document.getElementById("light").classList.add("active");
+  } else {
+    // document.getElementById("ready").classList.remove("active");
+    document.getElementById("light").classList.remove("active");
   }
 });
 
@@ -168,14 +177,16 @@ socket.on('join room', data => {
   //console.log(data + ' joined room')
   player.room = data.room;
   player.name = data.name;
-  document.getElementById('lobby').style.display = "none";
-  document.getElementById('game').style.display = "block";
+  let a = document.getElementsByClassName('myName');
+  [...a].forEach( x => x.innerText = player.name );
+  document.getElementById('lobby').classList.toggle("hidden");
+  document.getElementById('queue').classList.toggle("hidden");
 })
 
 
 socket.on('leave room', data => {
   removePlayer(data.id, data.numClients);
-  document.getElementById('eliminations').innerText = 'Player ' + data.name + ' Eliminated!';
+  // document.getElementById('eliminations').innerText = 'Player ' + data.name + ' Eliminated!';
 })
 
 
@@ -243,8 +254,9 @@ function loadImages(){
 
 
 function startGame(){
-  update();
-  timer = randomIntFromInterval(3,8)*30;
+  timer = randomIntFromInterval(3, 8) * 30;
+  paused = false;
+  animation = requestAnimationFrame(update);
   //document.getElementById("timer").innerText = timer;
 }
 
@@ -253,65 +265,91 @@ function readableRandomStringMaker(length) {
   return s;
 }
 
+function quickPlay() {
+  opponents = [];
+  player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 400, 8, 8, 'player', socket.id);
+  socket.emit('quick play', { x: player.x, y: player.y, alive: player.alive, id: player.id })
+}
+
+function manualStart() {
+  document.getElementById('queue').classList.toggle("hidden");
+  document.getElementById('rules').classList.toggle("hidden");
+  document.getElementById('hud').classList.toggle("hidden");
+  document.getElementById('hud').classList.toggle("flex");
+  socket.emit('start rules', { room: player.room });
+}
+
 function createRoom() {
   opponents = [];
   var room = readableRandomStringMaker(12);
-  player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 400, 16, 15, 'player', socket.id);
+  player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 400, 8, 8, 'player', socket.id);
   socket.emit('new player', { x: player.x, y: player.y, alive: player.alive, id: player.id, room: room })
   socket.emit('create room', { room: room, capacity: capacity });
   document.getElementById('capacity').innerText = capacity;
 }
 
 function joinRoom(room) {
-  player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 400, 16, 15, 'player', socket.id);
+  player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 400, 8, 8, 'player', socket.id);
   socket.emit('new player', { x: player.x, y: player.y, alive: player.alive, id: player.id, room: room })
   socket.emit('join room', room);
   document.getElementById('capacity').innerText = capacity;
 }
 
-function leaveRoom(room) {
+function leaveRoom(room,alive) {
   socket.emit('leave room', room);
-  document.getElementById('lobby').style.display = "block";
-  document.getElementById('game').style.display = "none";
+  document.getElementById("game").classList.toggle("hidden");
+  document.getElementById("hud").classList.toggle("hidden");
+  document.getElementById("hud").classList.toggle("flex");
+  if (alive) {
+    document.getElementById("survived").classList.toggle("hidden");
+  } else {
+    document.getElementById("eliminated").classList.toggle("hidden");
+  }
 }
 
-var update = function(){
-  ctx.clearRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
-  timer--;
-  //document.getElementById("timer").innerText = timer;
-  if(timer==0){
-    if(!gameStarted){
-  //     var oneMin = 60;
-  //     var display =   document.querySelector('#timer');
-  //     startTimer(oneMin, display);
-      socket.emit('start game');
-      gameStarted = true;
+function toLobby() {
+  location.reload();
+}
+
+var update = function () {
+  if (!paused) {
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    timer--;
+    //document.getElementById("timer").innerText = timer;
+    if (timer == 0) {
+      if (!gameStarted) {
+        //     var oneMin = 60;
+        //     var display =   document.querySelector('#timer');
+        //     startTimer(oneMin, display);
+        socket.emit('start game');
+        gameStarted = true;
+      }
+      if (gameStarted) {
+        go = !go;
+        socket.emit('flip switch', { go: go });
+        timer = randomIntFromInterval(3, 8) * 30;
+      }
     }
-    if (gameStarted) {
-      go = !go;
-      socket.emit('flip switch', {go: go});
-      timer = randomIntFromInterval(3,8)*30;
+    // if (gameTime == '00:00') {
+    //   player.alive = false;
+    //   player.kill();
+    // }
+    if (player.moving && !go && player.alive) {
+      player.alive = false;
+      player.kill();
     }
+    if (player.alive) {
+      player.draw();
+      player.update();
+    }
+    opponents.forEach(function (opponent) {
+      opponent.draw();
+    })
+    if (!player.alive) {
+      updateParticles();
+    }
+    requestAnimationFrame(update);
   }
-  if (gameTime == '00:00') {
-    player.alive = false;
-    player.kill();
-  }
-  if(player.moving && !go && player.alive){
-    player.alive = false;
-    player.kill();
-  }
-  if(player.alive){
-    player.draw();
-    player.update();
-  }
-  opponents.forEach(function (opponent) {
-    opponent.draw();
-  })
-  if(!player.alive){
-    updateParticles();
-  }
-  animation = requestAnimationFrame(update);
 }
 
 
@@ -329,7 +367,8 @@ function playerById (id) {
 function removePlayer(id,numClients) {
   var removePlayer = playerById(id)
   var playerCount = numClients;
-  document.getElementById('participating').innerText = playerCount;
+  let a = document.getElementsByClassName('participating');
+  [...a].forEach( x => x.innerText = playerCount );
 
   // Player not found
   if (!removePlayer) {
