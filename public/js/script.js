@@ -175,6 +175,12 @@ socket.on('new host', () => {
   player.isHost = true;
 });
 
+socket.on('start rules', () => {
+  document.getElementById('queue').classList.toggle("hidden");
+  document.getElementById('rules').classList.toggle("hidden");
+  document.getElementById('hud').classList.toggle("hidden");
+  document.getElementById('hud').classList.toggle("flex");
+})
 
 socket.on('join room', data => {
   //console.log(data)
@@ -279,10 +285,6 @@ function quickPlay() {
 }
 
 function manualStart() {
-  document.getElementById('queue').classList.toggle("hidden");
-  document.getElementById('rules').classList.toggle("hidden");
-  document.getElementById('hud').classList.toggle("hidden");
-  document.getElementById('hud').classList.toggle("flex");
   socket.emit('start rules', { room: player.room });
 }
 
