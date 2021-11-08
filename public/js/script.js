@@ -93,7 +93,7 @@ socket.on('new player', data => {
   }
 
   //ADD EXISTING PLAYERS TO OPPONENTS ARRAY
-  var opp = new Player(data.x - 100, data.y, 8, 8, "opponent", data.id);
+  var opp = new Player(player.x - 100, data.y, 8, 8, "opponent", data.id);
   var rand = Math.ceil(Math.random() * 10);
   if (rand > 5) {
     opp.shape = 'rect';
