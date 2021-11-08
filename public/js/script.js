@@ -16,7 +16,7 @@ const ctx = canvas.getContext("2d");
 //var paused = true;
 var gameStarted = false;
 var opponents = [];
-var capacity = 2;
+var capacity = 50;
 var totalPlayers = 0;
 var animation;
 var paused = true;
@@ -130,7 +130,7 @@ socket.on('player count', function (data) {
   [...a].forEach( x => x.innerText = playerCount );
   // totalPlayers = playerCount;
   // console.log('There are currently ' + playerCount + ' players participating.')
-  if (playerCount == capacity) {
+  if (playerCount === capacity) {
     manualStart();
   }
 });
