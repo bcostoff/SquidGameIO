@@ -345,6 +345,7 @@ io.on('connection', socket => {
 
 
     socket.on('start rules', data => {
+            io.to(data.room).emit('start rules')
         // if (!rules) {
             duration = 5;
             var timer = duration, seconds;
