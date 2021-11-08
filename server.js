@@ -19,6 +19,7 @@ let started = false
 let roomList = [];
 let capacity = 50;
 let go = false;
+let xArray = [-160,-130,-100,-70,-40,40,70,100,130,160];
 
 //Run when client connects
 io.on('connection', socket => {
@@ -334,8 +335,11 @@ io.on('connection', socket => {
         var i, existingPlayer;
         if (players.length > 0) {
             for (i = 0; i < players.length; i++) {
+                if (i === 10) {
+                    break;
+                }
                 existingPlayer = players[i];
-                socket.emit('new player', { id: existingPlayer.id, x: existingPlayer.getX(), y: existingPlayer.getY(), alive: existingPlayer.getAlive(), num_of_players: num_of_players })
+                socket.emit('new player', { id: existingPlayer.id, x: xArray[i], y: existingPlayer.getY(), alive: existingPlayer.getAlive(), num_of_players: num_of_players })
                 // console.log('Existing player ' + existingPlayer.id)
             }
         }
