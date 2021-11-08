@@ -162,6 +162,7 @@ socket.on('player eliminated', function (data) {
 });
 
 socket.on('flip switch', function (data) {
+  go = data.go;
   if(data.go){
     // document.getElementById("ready").classList.remove("active");
     document.getElementById("light").classList.add("active");
@@ -334,8 +335,7 @@ var update = function () {
         gameStarted = true;
       }
       if (gameStarted) {
-        go = !go;
-        socket.emit('flip switch', { go: go });
+        socket.emit('flip switch');
         timer = randomIntFromInterval(3, 8) * 30;
       }
     }
