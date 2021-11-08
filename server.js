@@ -41,6 +41,10 @@ io.on('connection', socket => {
                     // console.log("Socket now in rooms", socket.rooms);
                     // io.to(room).emit('user joined', socket.id);
                     var newPlayer = new Player(data.x, data.y, data.alive, data.id)
+                    newPlayer.setIsHost(true);
+
+                    //Make this socket host
+                    socket.emit('new host')
 
                     // Broadcast this socket client to other connected socket clients
                     socket.to(room).emit('new player', { id: newPlayer.id, x: newPlayer.getX(), y: newPlayer.getY(), alive: newPlayer.getAlive() })
