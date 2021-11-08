@@ -8,6 +8,7 @@ var Player = function (dataX, dataY, dataA, dataId, dataRoom, dataName) {
     var id = dataId;
     var room = dataRoom;
     var name = dataName;
+    var isHost = false;
 
   // Getters and setters
   var getX = function () {
@@ -28,6 +29,10 @@ var Player = function (dataX, dataY, dataA, dataId, dataRoom, dataName) {
     
   var getName = function () {
     return name;
+  }
+
+  var getIsHost = function () {
+    return isHost;
   }
     
 
@@ -51,6 +56,10 @@ var Player = function (dataX, dataY, dataA, dataId, dataRoom, dataName) {
   var setName = function (newName) {
     name = newName;
   }
+
+  var setIsHost = function (newIsHost) {
+    isHost = newIsHost;
+  }
     
 
   // Define which variables and methods can be accessed
@@ -60,11 +69,13 @@ var Player = function (dataX, dataY, dataA, dataId, dataRoom, dataName) {
     getAlive: getAlive,
     getRoom: getRoom,
     getName: getName,
+    getIsHost: getIsHost,
     setX: setX,
     setY: setY,
     setAlive: setAlive,
     setRoom: setRoom,
     setName: setName,
+    setIsHost: setIsHost,
     id: id
   }
 }
