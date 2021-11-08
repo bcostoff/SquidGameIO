@@ -18,6 +18,7 @@ let num_of_players = 0 // Player count
 let started = false
 let roomList = [];
 let capacity = 50;
+let go = false;
 
 //Run when client connects
 io.on('connection', socket => {
@@ -406,6 +407,7 @@ io.on('connection', socket => {
     })
 
     socket.on('flip switch', data => {
+        go = !go;
         var currentPlayer = playerById(socket.id);
 
         // Player not found
@@ -413,7 +415,7 @@ io.on('connection', socket => {
             console.log('Player not found: ' + socket.id)
             return
         }
-        io.to(currentPlayer.getRoom()).emit('flip switch', { go: data.go })
+        io.to(currentPlayer.getRoom()).emit('flip switch', { go: go })
     })
 
     socket.on('move player', data => {
