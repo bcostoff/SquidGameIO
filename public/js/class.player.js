@@ -18,6 +18,7 @@ class Entity{
       this.room = "";
       this.name = "";
       this.shape = "";
+      this.isHost = false;
       this.data = { x: this.x, y: this.y, alive: this.alive, id: this.id }
     } 
   
