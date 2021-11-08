@@ -171,6 +171,10 @@ socket.on('flip switch', function (data) {
   }
 });
 
+socket.on('new host', () => {
+  player.isHost = true;
+});
+
 
 socket.on('join room', data => {
   //console.log(data)
@@ -181,6 +185,9 @@ socket.on('join room', data => {
   [...a].forEach( x => x.innerText = player.name );
   document.getElementById('lobby').classList.toggle("hidden");
   document.getElementById('queue').classList.toggle("hidden");
+  if (player.isHost) {
+    document.getElementById('manualStart').classList.toggle("hidden");
+  }
 })
 
 
