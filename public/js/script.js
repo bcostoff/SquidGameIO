@@ -13,13 +13,13 @@ var timer;
 var go = false;
 const canvas = document.getElementById("squid");
 const ctx = canvas.getContext("2d");
-//var paused = true;
-var gameStarted = false;
 var opponents = [];
 var capacity = 50;
 var totalPlayers = 0;
 var animation;
 var paused = true;
+let xArray = [-30, 30, -60, 60, -90, 90, -120, 120, -150, 150]
+
 
 
 var bgPic = new Image();
@@ -84,7 +84,6 @@ socket.on('disconnect', () => {
 // New player message received
 socket.on('new player', data => {
   console.log('New player connected: ', data.id)
-  // console.log('Total Players: ', data.num_of_players)
   //AVOID DUPLICATE PLAYERS AS WELL AS LOCAL PLAYER
   var duplicate = playerById(data.id)
   if (duplicate) {
@@ -92,16 +91,20 @@ socket.on('new player', data => {
     return
   }
 
-  //ADD EXISTING PLAYERS TO OPPONENTS ARRAY
-  var opp = new Player(player.x - data.x, data.y, 8, 8, "opponent", data.id);
-  var rand = Math.ceil(Math.random() * 10);
-  if (rand > 5) {
-    opp.shape = 'rect';
-  } else {
-    opp.shape = 'circ';
+  if (opponents.length <= 10) {
+    let i = opponents.length;
+
+    //ADD EXISTING PLAYERS TO OPPONENTS ARRAY
+    var opp = new Player((player.x - xArray[i]), data.y, 8, 8, "opponent", data.id);
+    var rand = Math.ceil(Math.random() * 10);
+    if (rand > 5) {
+      opp.shape = 'rect';
+    } else {
+      opp.shape = 'circ';
+    }
+    opponents.push(opp)
+    // console.log(opponents);
   }
-  opponents.push(opp)
-  // console.log(opponents);
 })
 
 
@@ -128,8 +131,6 @@ socket.on('player count', function (data) {
   var playerCount = data.numClients;
   let a = document.getElementsByClassName('participating');
   [...a].forEach( x => x.innerText = playerCount );
-  // totalPlayers = playerCount;
-  // console.log('There are currently ' + playerCount + ' players participating.')
   if (playerCount === capacity) {
     manualStart();
   }
@@ -142,6 +143,10 @@ socket.on('update time', function (data) {
   var display = document.querySelector('#timer');
   display.textContent = minutes + ":" + seconds;
   gameTime = minutes + ":" + seconds;
+  if (gameTime == '00:00') {
+    player.alive = false;
+    player.kill();
+  }
 });
 
 
@@ -189,7 +194,9 @@ socket.on('join room', data => {
   player.room = data.room;
   player.name = data.name;
   let a = document.getElementsByClassName('myName');
-  [...a].forEach( x => x.innerText = player.name );
+  [...a].forEach(x => x.innerText = player.name);
+  let b = document.getElementsByClassName('capacity');
+  [...b].forEach( x => x.innerText = capacity );
   document.getElementById('lobby').classList.toggle("hidden");
   document.getElementById('queue').classList.toggle("hidden");
   if (player.isHost) {
@@ -271,6 +278,7 @@ function startGame(){
   timer = randomIntFromInterval(3, 8) * 30;
   paused = false;
   animation = requestAnimationFrame(update);
+  socket.emit('start game');
   //document.getElementById("timer").innerText = timer;
 }
 
@@ -324,25 +332,6 @@ function toLobby() {
 var update = function () {
   if (!paused) {
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    timer--;
-    //document.getElementById("timer").innerText = timer;
-    if (timer == 0) {
-      if (!gameStarted) {
-        //     var oneMin = 60;
-        //     var display =   document.querySelector('#timer');
-        //     startTimer(oneMin, display);
-        socket.emit('start game');
-        gameStarted = true;
-      }
-      if (gameStarted) {
-        socket.emit('flip switch');
-        timer = randomIntFromInterval(3, 8) * 30;
-      }
-    }
-    // if (gameTime == '00:00') {
-    //   player.alive = false;
-    //   player.kill();
-    // }
     if (player.moving && !go && player.alive) {
       player.alive = false;
       player.kill();
