@@ -35,17 +35,15 @@ class Entity{
     }
     
     update() {
-      if (gameStarted) {
-        if ((this.y + this.h) <= 0) {
-          paused = true;
-          cancelAnimationFrame(animation);
-          leaveRoom(this.room,this.alive);
-        } else {
-          if (this.moving) {
-            this.y -= 1;
-            this.data = { x: this.x, y: this.y, alive: this.alive, id: this.id, room: this.room }
-            this.sendToServer(this.data);
-          }
+      if ((this.y + this.h) <= 0) {
+        paused = true;
+        cancelAnimationFrame(animation);
+        leaveRoom(this.room,this.alive);
+      } else {
+        if (this.moving) {
+          this.y -= 1;
+          this.data = { x: this.x, y: this.y, alive: this.alive, id: this.id, room: this.room }
+          this.sendToServer(this.data);
         }
       }
     }
