@@ -19,6 +19,7 @@ var totalPlayers = 0;
 var animation;
 var paused = true;
 let xArray = [-30, 30, -60, 60, -90, 90, -120, 120, -150, 150]
+const DPR = window.devicePixelRatio;
 
 
 
@@ -71,7 +72,7 @@ socket.on('message', message => {
 // Socket connection successful
 socket.on('connect', () => {
   console.log('Connected to socket server')
-  // player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 400, 16, 15, 'player', socket.id);
+  // player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 300, 16, 15, 'player', socket.id);
   // //SEND LOCAL DATA TO SERVER
   // socket.emit('new player', { x: player.x, y: player.y, alive: player.alive, id: player.id })
 })
@@ -95,7 +96,8 @@ socket.on('new player', data => {
     let i = opponents.length;
 
     //ADD EXISTING PLAYERS TO OPPONENTS ARRAY
-    var opp = new Player((player.x - xArray[i]), data.y, 8, 8, "opponent", data.id);
+    // var opp = new Player((player.x - xArray[i]), data.y, 8, 8, "opponent", data.id);
+    var opp = new Player((player.x - xArray[i]), CANVAS_HEIGHT - 300, 8, 8, "opponent", data.id);
     var rand = Math.ceil(Math.random() * 10);
     if (rand > 5) {
       opp.shape = 'rect';
@@ -119,7 +121,8 @@ socket.on('move player', data => {
   }
 
   // Update player position
-  movePlayer.y = data.y
+  // movePlayer.y = data.y
+  movePlayer.y -= 1;
 })  
 
 // Player removed message received
@@ -289,7 +292,7 @@ function readableRandomStringMaker(length) {
 
 function quickPlay() {
   opponents = [];
-  player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 400, 8, 8, 'player', socket.id);
+  player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 300, 8, 8, 'player', socket.id);
   socket.emit('quick play', { x: player.x, y: player.y, alive: player.alive, id: player.id })
 }
 
@@ -300,14 +303,14 @@ function manualStart() {
 function createRoom() {
   opponents = [];
   var room = readableRandomStringMaker(12);
-  player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 400, 8, 8, 'player', socket.id);
+  player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 300, 8, 8, 'player', socket.id);
   socket.emit('new player', { x: player.x, y: player.y, alive: player.alive, id: player.id, room: room })
   socket.emit('create room', { room: room, capacity: capacity });
   document.getElementById('capacity').innerText = capacity;
 }
 
 function joinRoom(room) {
-  player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 400, 8, 8, 'player', socket.id);
+  player = new Player(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 300, 8, 8, 'player', socket.id);
   socket.emit('new player', { x: player.x, y: player.y, alive: player.alive, id: player.id, room: room })
   socket.emit('join room', room);
   document.getElementById('capacity').innerText = capacity;
