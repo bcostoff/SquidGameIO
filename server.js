@@ -120,6 +120,7 @@ io.on('connection', socket => {
                             // Add new player to the players array
                             players.push(newPlayer)
             
+                            //TODO CHECK IF THIS IS WORKING - WE MAY BE ABLE TO JOIN INTO FULL ROOMS
                             //EDIT ROOM IN ROOM LIST
                             roomList.find( function (r) {
                                 if (r.roomName !== element.roomName) return false;
